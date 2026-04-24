@@ -5,7 +5,7 @@ An AI-powered credit analysis agent built with [LangChain Deep Agents](https://g
 ## Contents
 
 - [Setup](#setup)
-- [1. Agent Architecture](#1-agent-architecture)
+- [1. Agent Architecture and Tracing in LnagSmith](#1-agent-architecture)
 - [2. Evaluations](#2-evaluations)
 - [3. Testing in Studio](#3-testing-in-studio)
 - [Project Structure](#project-structure)
@@ -25,7 +25,7 @@ You'll need:
 
 ---
 
-## 1. Agent Architecture
+## 1. Agent Architecture and Tracing in LangSmith
 
 ```
                     ┌──────────────────────────────────────┐
@@ -62,6 +62,19 @@ You'll need:
   ║  └── compliance_guardrail (custom @wrap_tool_call)              ║
   ╚═════════════════════════════════════════════════════════════════╝
 ```
+
+### Tracing
+
+All agent runs are traced in LangSmith. Set these in your `.env` to see each step of the agent execution as you invoke:
+
+```bash
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=your-key
+LANGSMITH_PROJECT=credit-memo-agent
+```
+
+<img width="1983" height="1279" alt="Screenshot 2026-04-24 at 5 19 18 PM" src="https://github.com/user-attachments/assets/d58fcb3c-4900-4879-94bd-0729773b2558" />
+
 
 ### Components
 
@@ -133,6 +146,12 @@ python agent/main.py   # interactive mode
 
 The project includes a full evaluation suite with five evaluator types, a test dataset, and a runner script that supports model comparison. Results are visualized in LangSmith.
 
+All Experiments: 
+<img width="2222" height="697" alt="Screenshot 2026-04-24 at 5 16 33 PM" src="https://github.com/user-attachments/assets/4e98cfaf-3e1a-4194-a21a-1d0bc0fcadf5" />
+
+Evaluator Scores per Experiment: 
+<img width="2054" height="881" alt="Screenshot 2026-04-24 at 5 16 59 PM" src="https://github.com/user-attachments/assets/6d0b15e9-06fa-46a8-835d-a6efe1570ef1" />
+
 ### Evaluator Types
 
 | Evaluator | Type | What it checks |
@@ -142,6 +161,7 @@ The project includes a full evaluation suite with five evaluator types, a test d
 | `goal_achievement` | LLM judge | Memo achieves 10 specific goals (recommendation, metrics, risk analysis, citations) |
 | `regex_patterns` | Code check | Formatting conventions — leverage ratios (`4.7x`), percentages (`20.0%`), dollar amounts (`$300M`), ratings (`BB-`), disclaimer |
 | `pe_credit_diligence` | LLM judge | PE diligence criteria — sponsor involvement, stress scenarios, management, covenants, comps, sector risks |
+
 
 ### Test Dataset
 
@@ -176,21 +196,13 @@ python eval/run_eval.py --models gpt-4.1-mini gpt-4.1 gpt-4.1-nano
 
 Each model produces a separate experiment on the same dataset in LangSmith for side-by-side comparison. All evaluators return `{"score": float, "comment": str}` which renders natively in LangSmith's evaluation UI.
 
-### Tracing
-
-All agent runs are traced in LangSmith. Set these in your `.env`:
-
-```bash
-LANGSMITH_TRACING=true
-LANGSMITH_API_KEY=your-key
-LANGSMITH_PROJECT=credit-memo-agent
-```
-
 ---
 
 ## 3. Testing in Studio
 
-Open the project in [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio) to visualize the agent graph, inspect state at each node, and experiment interactively.
+Open the project in [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio) to <img width="1194" height="1236" alt="Screenshot 2026-04-24 at 5 04 40 PM" src="https://github.com/user-attachments/assets/e32aa992-2fab-4196-ae5e-94a108643351" />
+visualize the agent graph, inspect state and memory at each node, and experiment interactively.
+
 
 ```bash
 uv run langgraph dev
@@ -213,7 +225,8 @@ They operate outpatient surgery centers in the Southeast. Produce the full memo.
 ```
 Generate a credit memo for GlobalTech Industries evaluating their BB- rated leveraged loan.
 Do not ask questions, produce the memo.
-```
+```<img width="1194" height="1236" alt="Screenshot 2026-04-24 at 5 04 40 PM" src="https://github.com/user-attachments/assets/2ec73ee8-4a8f-4b0c-9e10-6ce3e85c8b78" />
+
 
 ---
 
