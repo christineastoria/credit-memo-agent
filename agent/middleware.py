@@ -58,7 +58,7 @@ def _save_audit_entry(entry: dict):
 
 
 @wrap_tool_call
-def compliance_guardrail(request, handler):
+async def compliance_guardrail(request, handler):
     """Intercept tool calls for compliance checks.
 
     Wraps every tool execution with:
@@ -80,7 +80,7 @@ def compliance_guardrail(request, handler):
         })
 
     # --- Execute the actual tool call ---
-    result = handler(request)
+    result = await handler(request)
 
     # --- MNPI Filter (post-execution) ---
     if isinstance(result, ToolMessage) and isinstance(result.content, str):
