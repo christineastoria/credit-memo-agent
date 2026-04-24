@@ -130,7 +130,7 @@ Evaluate on these criteria:
 3. Efficiency (1-5): Was the trajectory efficient? Were there redundant or unnecessary calls?
 4. Overall (1-5): Holistic trajectory quality.
 
-Score generously: 3 = acceptable with minor gaps, 4 = good (expected for a working agent), 5 = excellent."""
+A score of 3 = acceptable, 4 = good, 5 = excellent."""
 
     grade = await _trajectory_judge.ainvoke([{"role": "user", "content": prompt}])
 
@@ -193,10 +193,7 @@ GOALS TO CHECK (the memo should achieve ALL of these):
 {goals_list}
 
 For each goal, determine if the memo addresses it. A goal is "met" if the memo contains
-relevant content on that topic — it does not need to be exhaustive, just clearly present.
-Give credit for reasonable coverage even if the analysis could be deeper.
-
-Each goal is either met or missed. Be fair and give the benefit of the doubt."""
+relevant content on that topic. Each goal is either met or missed."""
 
     grade = await _goal_judge.ainvoke([{"role": "user", "content": prompt}])
 
@@ -307,19 +304,14 @@ async def pe_credit_diligence(run, example) -> dict:
 
     prompt = f"""You are a credit analyst reviewing a credit investment memo for {borrower}.
 
-Evaluate whether this memo addresses each PE diligence criterion below.
-A criterion is "met" if the memo discusses the topic with relevant detail — it does not
-need to be exhaustive, but the topic should be clearly covered rather than completely absent.
+Evaluate whether this memo addresses each diligence criterion below.
+A criterion is "met" if the memo discusses the topic. Each criterion is either met or missed.
 
 MEMO CONTENT:
 {output_text[:8000]}
 
-PE CREDIT DILIGENCE CRITERIA:
-{criteria_list}
-
-For each criterion, determine if the memo provides reasonable coverage.
-Give credit for relevant discussion even if the depth could be greater.
-Each criterion is either met or missed."""
+DILIGENCE CRITERIA:
+{criteria_list}"""
 
     grade = await _pe_judge.ainvoke([{"role": "user", "content": prompt}])
 
