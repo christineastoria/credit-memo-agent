@@ -6,18 +6,17 @@ Hooks into the Deep Agents middleware pipeline to enforce three rules:
   2. Disclaimer Check — ensures memos include required compliance language before writing
   3. Audit Logging — logs all external data source accesses for compliance trail
 
-Uses the @wrap_tool_call decorator to intercept tool execution.
+Implements both sync and async wrap_tool_call so the middleware works under
+both invoke() (CLI, evals) and ainvoke() (LangGraph Studio).
 """
 
 import json
 import os
 from datetime import datetime, timezone
 
-from langchain.agents.middleware import wrap_tool_call
+from langchain.agents.middleware.types import AgentMiddleware, ToolCallRequest
 from langchain_core.messages import ToolMessage
 
-# Keywords that indicate potential MNPI — if any appear in tool output,
-# the middleware blocks the content and returns a warning instead
 MNPI_KEYWORDS = [
     "material non-public",
     "insider information",
@@ -29,19 +28,10 @@ MNPI_KEYWORDS = [
     "pending regulatory",
 ]
 
-# Required disclaimer text that must be present before generating the final memo
-REQUIRED_DISCLAIMER = (
-    "This memo is for internal use only and does not constitute investment advice. "
-    "All analysis is based on publicly available information and internal firm data. "
-    "This document may contain forward-looking statements subject to risks and uncertainties."
-)
-
-# Path for the audit log file
 AUDIT_LOG_PATH = os.path.join(os.path.dirname(__file__), "output", "audit_log.json")
 
 
 def _load_audit_log() -> list:
-    """Load existing audit log entries or return empty list."""
     if os.path.exists(AUDIT_LOG_PATH):
         with open(AUDIT_LOG_PATH, "r") as f:
             return json.load(f)
@@ -49,7 +39,6 @@ def _load_audit_log() -> list:
 
 
 def _save_audit_entry(entry: dict):
-    """Append an entry to the audit log."""
     os.makedirs(os.path.dirname(AUDIT_LOG_PATH), exist_ok=True)
     log = _load_audit_log()
     log.append(entry)
@@ -57,19 +46,7 @@ def _save_audit_entry(entry: dict):
         json.dump(log, f, indent=2)
 
 
-@wrap_tool_call
-async def compliance_guardrail(request, handler):
-    """Intercept tool calls for compliance checks.
-
-    Wraps every tool execution with:
-    1. Pre-execution audit logging for external data access tools
-    2. Post-execution MNPI scanning on tool results
-    3. Disclaimer validation before memo generation
-    """
-    tool_name = request.tool_call["name"]
-    tool_args = request.tool_call["args"]
-
-    # --- Audit Logging (pre-execution) ---
+def _pre_call(tool_name, tool_args):
     external_tools = ["web_search", "rag_search", "query_deals_db"]
     if tool_name in external_tools:
         _save_audit_entry({
@@ -79,10 +56,8 @@ async def compliance_guardrail(request, handler):
             "action": "external_data_access",
         })
 
-    # --- Execute the actual tool call ---
-    result = await handler(request)
 
-    # --- MNPI Filter (post-execution) ---
+def _post_call(result, tool_name, tool_args, tool_call_id):
     if isinstance(result, ToolMessage) and isinstance(result.content, str):
         result_lower = result.content.lower()
         for keyword in MNPI_KEYWORDS:
@@ -100,10 +75,9 @@ async def compliance_guardrail(request, handler):
                         f"Please verify the information source and consult compliance "
                         f"before proceeding."
                     ),
-                    tool_call_id=request.tool_call["id"],
+                    tool_call_id=tool_call_id,
                 )
 
-    # --- Disclaimer Check (pre-memo-generation) ---
     if tool_name == "generate_memo_docx":
         disclaimer_arg = tool_args.get("disclaimer", "")
         if not disclaimer_arg or len(disclaimer_arg) < 50:
@@ -115,3 +89,23 @@ async def compliance_guardrail(request, handler):
             })
 
     return result
+
+
+class ComplianceGuardrailMiddleware(AgentMiddleware):
+    """Intercepts tool calls for MNPI filtering, disclaimer checks, and audit logging."""
+
+    tools = []
+
+    def wrap_tool_call(self, request, handler):
+        tool_name = request.tool_call["name"]
+        tool_args = request.tool_call["args"]
+        _pre_call(tool_name, tool_args)
+        result = handler(request)
+        return _post_call(result, tool_name, tool_args, request.tool_call["id"])
+
+    async def awrap_tool_call(self, request, handler):
+        tool_name = request.tool_call["name"]
+        tool_args = request.tool_call["args"]
+        _pre_call(tool_name, tool_args)
+        result = await handler(request)
+        return _post_call(result, tool_name, tool_args, request.tool_call["id"])

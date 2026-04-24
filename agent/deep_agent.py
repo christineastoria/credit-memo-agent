@@ -17,7 +17,7 @@ from subagents.data import data_subagent
 from subagents.calculations import calculations_subagent
 from tools.memo_writer import generate_memo_docx
 from tools.memory_tools import read_analyst_prefs, read_market_intel, save_market_intel
-from middleware import compliance_guardrail
+from middleware import ComplianceGuardrailMiddleware
 
 _AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -71,7 +71,7 @@ def create_orchestrator(store: InMemoryStore | None = None, model: str = "gpt-4.
         skills=[os.path.join(_AGENT_DIR, "skills") + "/"],
         store=store,
         checkpointer=MemorySaver(),
-        middleware=[compliance_guardrail],
+        middleware=[ComplianceGuardrailMiddleware()],
     )
 
     return agent, store

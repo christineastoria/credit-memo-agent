@@ -21,7 +21,7 @@ from subagents.data import data_subagent
 from subagents.calculations import calculations_subagent
 from tools.memo_writer import generate_memo_docx
 from tools.memory_tools import read_analyst_prefs, read_market_intel, save_market_intel
-from middleware import compliance_guardrail
+from middleware import ComplianceGuardrailMiddleware
 from data.seed_db import main as seed_main
 from tools.rag_retriever import init_vector_store
 
@@ -65,5 +65,5 @@ graph = create_deep_agent(
     subagents=[research_subagent, data_subagent, calculations_subagent],
     backend=FilesystemBackend(root_dir=_AGENT_DIR, virtual_mode=True),
     skills=[os.path.join(_AGENT_DIR, "skills") + "/"],
-    middleware=[compliance_guardrail],
+    middleware=[ComplianceGuardrailMiddleware()],
 )
