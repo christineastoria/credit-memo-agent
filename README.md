@@ -10,10 +10,10 @@ An AI-powered credit analysis agent built with [LangChain Deep Agents](https://g
 │              (Deep Agent — GPT-4.1)                  │
 │                                                     │
 │  Middleware:                                        │
-│  ├── TodoListMiddleware (planning)                  │
-│  ├── FilesystemMiddleware (file ops)                │
-│  ├── SubAgentMiddleware (delegation)                │
-│  ├── SkillsMiddleware (memo template)               │
+│  ├── TodoListMiddleware                             │
+│  ├── FilesystemMiddleware                           │
+│  ├── SubAgentMiddleware                             │
+│  ├── SkillsMiddleware                               │
 │  └── ComplianceGuardrailMiddleware (custom)         │
 │                                                     │
 │  Memory (namespaced Store):                         │
@@ -36,14 +36,14 @@ An AI-powered credit analysis agent built with [LangChain Deep Agents](https://g
 
 | Component | Purpose | Tools |
 |-----------|---------|-------|
-| **Orchestrator** | Plans workflow, coordinates subagents, assembles final memo | `generate_memo_docx`, `write_todos`, `task`, memory tools |
+| **Orchestrator create_deep_agent** | Plans workflow, coordinates subagents, assembles final memo | `generate_memo_docx`, `write_todos`, `task`, memory tools |
 | **Research Subagent** | Gathers public + internal qualitative research | `web_search`, `rag_search` |
 | **Data Subagent** | Queries internal deal database for comps and exposure | `query_deals_db`, `get_db_schema` |
 | **Calculations Subagent** | Runs financial math in a secure sandbox | `run_financial_calculation` |
 
 ### Key Features
 
-- **Multi-source research**: Combines internet data (Tavily/Perplexity) with internal docs (RAG) and deal data (SQLite)
+- **Multi-source research**: Combines internet data (Tavily or Perplexity) with internal docs (RAG) and deal data (SQLite)
 - **Precise calculations**: Financial metrics computed via LangSmith code sandbox — no LLM arithmetic
 - **Branded output**: Generates formatted `.docx` memos using a structured template (Deep Agents Skill)
 - **Citation tracking**: Every fact tagged with its source, compiled into a Sources appendix
@@ -57,7 +57,7 @@ An AI-powered credit analysis agent built with [LangChain Deep Agents](https://g
 
 ```bash
 cd credit-investment-memo-agent
-uv sync        # or: pip install -r requirements.txt
+uv sync        
 ```
 
 ### 2. Configure API keys
@@ -69,10 +69,10 @@ cp .env.example .env
 
 You'll need:
 - **OpenAI API key** — powers the orchestrator and subagents (GPT-4.1)
-- **Tavily API key** — web search (free tier at [tavily.com](https://tavily.com))
+- **Tavily API key or Perplexity API key** — web search (free tier at [tavily.com](https://tavily.com))
 - **LangSmith API key** — tracing + sandbox + evals ([smith.langchain.com](https://smith.langchain.com/))
 
-Optionally, swap Tavily for Perplexity (richer citations) — see `agent/tools/web_search.py` for instructions.
+Swap Tavily for Perplexity (richer citations) — see `agent/tools/web_search.py` for instructions.
 
 ### 3. Seed the database
 
