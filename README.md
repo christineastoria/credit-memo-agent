@@ -97,6 +97,16 @@ python agent/main.py 'Analyze Summit Healthcare Partners for a new 200M dollar t
 python agent/main.py
 ```
 
+### LangGraph Studio
+
+You can open this project in [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio) to visualize the agent graph, inspect state at each node, and experiment interactively.
+
+```bash
+uv run langgraph dev
+```
+
+This reads `langgraph.json` in the project root, which points to `agent/graph.py:graph`. The server automatically seeds the database, initializes the RAG vector store, and loads memory — no manual setup needed. Open the Studio UI to send requests, watch tool calls in real time, and explore subagent delegation.
+
 ### Example output
 
 The agent will:

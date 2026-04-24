@@ -15,4 +15,5 @@ dependencies = [
     "langchain-chroma",
     "python-docx",
     "python-dotenv",
+    "langgraph-cli[inmem]",
 ]

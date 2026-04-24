@@ -94,7 +94,7 @@ _trajectory_judge = ChatOpenAI(
 ).with_structured_output(TrajectoryGrade, method="json_schema", strict=True)
 
 
-async def trajectory_quality(run, example) -> dict:
+def trajectory_quality(run, example) -> dict:
     """LLM judge that evaluates the tool call trajectory for quality.
 
     Checks tool selection, argument validity, and execution efficiency.
@@ -132,7 +132,7 @@ Evaluate on these criteria:
 
 A score of 3 = acceptable, 4 = good, 5 = excellent."""
 
-    grade = await _trajectory_judge.ainvoke([{"role": "user", "content": prompt}])
+    grade = _trajectory_judge.invoke([{"role": "user", "content": prompt}])
 
     score = grade["overall_score"] / 5.0
 
@@ -165,7 +165,7 @@ _goal_judge = ChatOpenAI(
 ).with_structured_output(GoalGrade, method="json_schema", strict=True)
 
 
-async def goal_achievement(run, example) -> dict:
+def goal_achievement(run, example) -> dict:
     """LLM judge that checks whether the memo achieves specific goals.
 
     Each dataset example defines a list of goals the memo should satisfy.
@@ -195,7 +195,7 @@ GOALS TO CHECK (the memo should achieve ALL of these):
 For each goal, determine if the memo addresses it. A goal is "met" if the memo contains
 relevant content on that topic. Each goal is either met or missed."""
 
-    grade = await _goal_judge.ainvoke([{"role": "user", "content": prompt}])
+    grade = _goal_judge.invoke([{"role": "user", "content": prompt}])
 
     total = len(goals)
     met = len(grade["goals_met"])
@@ -281,7 +281,7 @@ _pe_judge = ChatOpenAI(
 ).with_structured_output(PEDiligenceGrade, method="json_schema", strict=True)
 
 
-async def pe_credit_diligence(run, example) -> dict:
+def pe_credit_diligence(run, example) -> dict:
     """LLM judge applying PE credit diligence standards.
 
     Checks whether the memo addresses the deeper due diligence questions
@@ -313,7 +313,7 @@ MEMO CONTENT:
 DILIGENCE CRITERIA:
 {criteria_list}"""
 
-    grade = await _pe_judge.ainvoke([{"role": "user", "content": prompt}])
+    grade = _pe_judge.invoke([{"role": "user", "content": prompt}])
 
     total = len(pe_criteria)
     met = len(grade["criteria_met"])
