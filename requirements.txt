@@ -1,0 +1,20 @@
+# Core framework
+deepagents
+langchain>=1.0,<2.0
+langchain-core>=1.0,<2.0
+langsmith>=0.3.0
+
+# Model providers
+langchain-openai
+langchain-perplexity
+langchain-tavily
+
+# RAG dependencies
+langchain-text-splitters
+langchain-chroma
+
+# Document generation
+python-docx
+
+# Environment
+python-dotenv
